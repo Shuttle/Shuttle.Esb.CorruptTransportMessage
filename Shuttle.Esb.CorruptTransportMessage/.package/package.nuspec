@@ -12,7 +12,7 @@
 		<readme>docs\README.md</readme>
 		<repository type="git" url="https://github.com/shuttle/Shuttle.Esb.CorruptTransportMessage.git" />
 		<projectUrl>https://github.com/shuttle/Shuttle.Esb.CorruptTransportMessage</projectUrl>
-		<description>The CorruptTransportMessage module for Shuttle.Esb writes any transport messages to disk that cannot be deserialized.</description>
+		<description>The CorruptTransportMessage extension writes any transport messages to disk that cannot be deserialized.</description>
 		<copyright>Copyright (c) 2024, Eben Roux</copyright>
 		<tags></tags>
 		<dependencies>
