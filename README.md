@@ -7,7 +7,7 @@ PM> Install-Package Shuttle.Esb.CorruptTransportMessage
 ## Configuration
 
 ```c#
-services.AddCorruptTransportMessageModule(builder => {
+services.AddCorruptTransportMessage(builder => {
 	builder.Options.MessageFolder = ".\\corrupt-transport-messages"; // default
 });
 ```
