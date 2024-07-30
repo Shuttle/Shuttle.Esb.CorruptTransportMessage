@@ -2,14 +2,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Shuttle.Core.Contract;
-using Shuttle.Core.Pipelines;
 
 namespace Shuttle.Esb.CorruptTransportMessage
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddCorruptTransportMessage(this IServiceCollection services,
-            Action<CorruptTransportMessageBuilder> builder = null)
+        public static IServiceCollection AddCorruptTransportMessage(this IServiceCollection services, Action<CorruptTransportMessageBuilder> builder = null)
         {
             Guard.AgainstNull(services, nameof(services));
 
@@ -24,7 +22,7 @@ namespace Shuttle.Esb.CorruptTransportMessage
                 options.MessageFolder = corruptTransportMessageBuilder.Options.MessageFolder;
             });
 
-            services.AddPipelineModule<CorruptTransportMessageHostedService>();
+            services.AddHostedService<CorruptTransportMessageHostedService>();
 
             return services;
         }
