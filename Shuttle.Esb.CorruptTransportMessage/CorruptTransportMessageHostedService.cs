@@ -7,45 +7,43 @@ using Microsoft.Extensions.Options;
 using Shuttle.Core.Contract;
 using Shuttle.Core.Streams;
 
-namespace Shuttle.Esb.CorruptTransportMessage
+namespace Shuttle.Esb.CorruptTransportMessage;
+
+public class CorruptTransportMessageHostedService : IHostedService
 {
-    public class CorruptTransportMessageHostedService : IHostedService
+    private readonly string _corruptTransportMessageFolder;
+    private readonly IDeserializeTransportMessageObserver _deserializeTransportMessageObserver;
+
+    public CorruptTransportMessageHostedService(IOptions<CorruptTransportMessageOptions> corruptTransportMessageOptions, IDeserializeTransportMessageObserver deserializeTransportMessageObserver)
     {
-        private readonly IDeserializeTransportMessageObserver _deserializeTransportMessageObserver;
-        private readonly string _corruptTransportMessageFolder;
+        Guard.AgainstNull(Guard.AgainstNull(corruptTransportMessageOptions).Value);
 
-        public CorruptTransportMessageHostedService(IOptions<CorruptTransportMessageOptions> corruptTransportMessageOptions, IDeserializeTransportMessageObserver deserializeTransportMessageObserver)
+        _deserializeTransportMessageObserver = Guard.AgainstNull(deserializeTransportMessageObserver);
+        _corruptTransportMessageFolder = corruptTransportMessageOptions.Value.MessageFolder;
+
+        _deserializeTransportMessageObserver.TransportMessageDeserializationException += OnTransportMessageDeserializationException;
+    }
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await Task.CompletedTask;
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        _deserializeTransportMessageObserver.TransportMessageDeserializationException -= OnTransportMessageDeserializationException;
+
+        await Task.CompletedTask;
+    }
+
+    private void OnTransportMessageDeserializationException(object? sender, DeserializationExceptionEventArgs deserializationExceptionEventArgs)
+    {
+        var filePath = Path.Combine(_corruptTransportMessageFolder, $"{Guid.NewGuid()}.stm");
+
+        using (Stream file = File.OpenWrite(filePath))
+        using (var stream = Guard.AgainstNull(deserializationExceptionEventArgs.PipelineContext.Pipeline.State.GetReceivedMessage()).Stream.CopyAsync().GetAwaiter().GetResult())
         {
-            Guard.AgainstNull(corruptTransportMessageOptions, nameof(corruptTransportMessageOptions));
-            Guard.AgainstNull(corruptTransportMessageOptions.Value, nameof(corruptTransportMessageOptions.Value));
-
-            _deserializeTransportMessageObserver = Guard.AgainstNull(deserializeTransportMessageObserver, nameof(deserializeTransportMessageObserver));
-	        _corruptTransportMessageFolder = corruptTransportMessageOptions.Value.MessageFolder;
-
-            _deserializeTransportMessageObserver.TransportMessageDeserializationException += OnTransportMessageDeserializationException;
-        }
-
-        private void OnTransportMessageDeserializationException(object sender, DeserializationExceptionEventArgs deserializationExceptionEventArgs)
-        {
-            var filePath = Path.Combine(_corruptTransportMessageFolder, $"{Guid.NewGuid()}.stm");
-
-            using (Stream file = File.OpenWrite(filePath))
-            using (var stream = deserializationExceptionEventArgs.PipelineEvent.Pipeline.State.GetReceivedMessage().Stream.Copy())
-            {
-                stream.CopyTo(file);
-            }
-        }
-
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
-
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            _deserializeTransportMessageObserver.TransportMessageDeserializationException -= OnTransportMessageDeserializationException;
-
-            await Task.CompletedTask;
+            stream.CopyTo(file);
         }
     }
 }
