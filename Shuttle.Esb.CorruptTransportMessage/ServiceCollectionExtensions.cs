@@ -15,7 +15,12 @@ public static class ServiceCollectionExtensions
         builder?.Invoke(corruptTransportMessageBuilder);
 
         services.TryAddSingleton<CorruptTransportMessageHostedService, CorruptTransportMessageHostedService>();
-        services.AddSingleton(Options.Create(corruptTransportMessageBuilder.Options));
+
+        services.AddOptions<CorruptTransportMessageOptions>().Configure(options =>
+        {
+            options.MessageFolder = corruptTransportMessageBuilder.Options.MessageFolder;
+        });
+
         services.AddHostedService<CorruptTransportMessageHostedService>();
 
         return services;
