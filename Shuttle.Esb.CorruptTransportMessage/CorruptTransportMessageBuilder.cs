@@ -2,24 +2,22 @@
 using Microsoft.Extensions.DependencyInjection;
 using Shuttle.Core.Contract;
 
-namespace Shuttle.Esb.CorruptTransportMessage
+namespace Shuttle.Esb.CorruptTransportMessage;
+
+public class CorruptTransportMessageBuilder
 {
-    public class CorruptTransportMessageBuilder
+    private CorruptTransportMessageOptions _corruptTransportMessageOptions = new();
+
+    public CorruptTransportMessageBuilder(IServiceCollection services)
     {
-        private CorruptTransportMessageOptions _corruptTransportMessageOptions = new CorruptTransportMessageOptions();
-        public IServiceCollection Services { get; }
-
-        public CorruptTransportMessageBuilder(IServiceCollection services)
-        {
-            Guard.AgainstNull(services, nameof(services));
-
-            Services = services;
-        }
-
-        public CorruptTransportMessageOptions Options
-        {
-            get => _corruptTransportMessageOptions;
-            set => _corruptTransportMessageOptions = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        Services = Guard.AgainstNull(services);
     }
+
+    public CorruptTransportMessageOptions Options
+    {
+        get => _corruptTransportMessageOptions;
+        set => _corruptTransportMessageOptions = Guard.AgainstNull(value);
+    }
+
+    public IServiceCollection Services { get; }
 }
